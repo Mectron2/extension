@@ -39,6 +39,10 @@ export default function Popup() {
             const { exceptions } =
                 (await chrome.storage.local.get(["exceptions"])) as { exceptions?: string[] };
 
+            if (exceptions && exceptions.includes(domain)) {
+                return;
+            }
+
             const updated = exceptions ? [...exceptions, domain] : [domain];
             await chrome.storage.local.set({ exceptions: updated });
 
