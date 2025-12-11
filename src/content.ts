@@ -4,13 +4,44 @@ export const getExceptions = async () => {
 };
 
 const domain = new URL(window.location.href).hostname;
+const DARK_MODE_CLASS = "extension-dark-mode";
+const DARK_MODE_STYLE_ID = "extension-dark-mode-style";
+const INVERT_FILTER = "invert(1) hue-rotate(180deg)";
+
+function ensureDarkModeStyles() {
+    if (document.getElementById(DARK_MODE_STYLE_ID)) {
+        return;
+    }
+
+    const style = document.createElement("style");
+    style.id = DARK_MODE_STYLE_ID;
+    style.textContent = `
+        html.${DARK_MODE_CLASS} {
+            filter: ${INVERT_FILTER} !important;
+            background: #111 !important;
+        }
+
+        html.${DARK_MODE_CLASS} img,
+        html.${DARK_MODE_CLASS} video,
+        html.${DARK_MODE_CLASS} picture,
+        html.${DARK_MODE_CLASS} canvas {
+            filter: ${INVERT_FILTER} !important;
+        }
+    `;
+    document.head.append(style);
+}
 
 function applyDarkMode() {
-    document.documentElement.style.filter = "invert(1) hue-rotate(180deg)";
+    ensureDarkModeStyles();
+    document.documentElement.classList.add(DARK_MODE_CLASS);
 }
 
 function removeDarkMode() {
-    document.documentElement.style.filter = "";
+    document.documentElement.classList.remove(DARK_MODE_CLASS);
+    const style = document.getElementById(DARK_MODE_STYLE_ID);
+    if (style) {
+        style.remove();
+    }
 }
 
 async function refreshDarkMode() {
