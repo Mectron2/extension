@@ -1,16 +1,17 @@
-import {useCallback, useEffect, useState} from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export default function Popup() {
     const [enabled, setEnabled] = useState<boolean>(false);
     const [exceptions, setExceptions] = useState<string[]>([]);
 
     const getExceptions = useCallback(async () => {
-        const { exceptions } = (await chrome.storage.local.get(["exceptions"])) as { exceptions?: string[] };
+        const { exceptions } =
+            (await chrome.storage.local.get(["exceptions"])) as { exceptions?: string[] };
         return exceptions || [];
     }, []);
 
     useEffect(() => {
-        chrome.storage.local.get(["enabled"]).then(({enabled}) => {
+        chrome.storage.local.get(["enabled"]).then(({ enabled }) => {
             setEnabled(!!enabled);
         });
 
@@ -18,63 +19,104 @@ export default function Popup() {
     }, [getExceptions]);
 
     const handleToggle = useCallback(async () => {
-        const {enabled} = await chrome.storage.local.get(["enabled"]);
+        const { enabled } = await chrome.storage.local.get(["enabled"]);
         const newState = !enabled;
 
-        await chrome.storage.local.set({enabled: newState});
+        await chrome.storage.local.set({ enabled: newState });
         setEnabled(newState);
 
-        chrome.tabs.query({active: true, currentWindow: true}, ([tab]) => {
-            chrome.tabs.sendMessage(tab.id!, {type: "toggle", enabled: newState});
+        chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+            chrome.tabs.sendMessage(tab.id!, { type: "toggle", enabled: newState });
         });
     }, []);
 
     const addToExceptions = useCallback(async () => {
-        const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
         if (tab.url) {
-            const url = new URL(tab.url);
-            const domain = url.hostname;
+            const domain = new URL(tab.url).hostname;
 
-            const { exceptions } = (await chrome.storage.local.get(["exceptions"])) as { exceptions?: string[] };
-            const updatedExceptions = exceptions ? [...exceptions, domain] : [domain];
+            const { exceptions } =
+                (await chrome.storage.local.get(["exceptions"])) as { exceptions?: string[] };
 
-            await chrome.storage.local.set({exceptions: updatedExceptions});
+            const updated = exceptions ? [...exceptions, domain] : [domain];
+            await chrome.storage.local.set({ exceptions: updated });
 
-            setExceptions(updatedExceptions);
+            setExceptions(updated);
         }
     }, []);
 
     const removeFromExceptions = useCallback(async () => {
-        const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+
         if (tab.url) {
-            const url = new URL(tab.url);
-            const domain = url.hostname;
+            const domain = new URL(tab.url).hostname;
 
-            const { exceptions } = (await chrome.storage.local.get(["exceptions"])) as { exceptions?: string[] };
+            const { exceptions } =
+                (await chrome.storage.local.get(["exceptions"])) as { exceptions?: string[] };
+
             if (exceptions) {
-                const updatedExceptions = exceptions.filter(d => d !== domain);
-                await chrome.storage.local.set({exceptions: updatedExceptions});
+                const updated = exceptions.filter((d) => d !== domain);
+                await chrome.storage.local.set({ exceptions: updated });
+                setExceptions(updated);
             }
-
-            setExceptions(prev => prev.filter(d => d !== domain));
         }
     }, []);
 
     return (
-        <div>
-            <h1>Extension Popup</h1>
-            <button onClick={handleToggle}>{ enabled ? "Disable Dark Mode" : "Enable Dark Mode" }</button>
-            <div style={{ marginTop: "10px" }}>
-                <button onClick={addToExceptions}>Add Current Domain to Exceptions</button>
-                <button onClick={removeFromExceptions} style={{ marginLeft: "10px" }}>Remove Current Domain from Exceptions</button>
+        <div className="w-[300px] p-4 bg-gray-900 text-white shadow-xl space-y-5">
+            <h1 className="text-xl font-semibold text-center">Darkify</h1>
+
+            <div className="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
+                <span className="text-sm font-medium">Dark Mode</span>
+
+                <button
+                    onClick={handleToggle}
+                    className={`relative inline-flex h-6 w-12 items-center rounded-full transition ${
+                        enabled ? "bg-green-500" : "bg-gray-500"
+                    }`}
+                >
+                    <span
+                        className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                            enabled ? "translate-x-6" : "translate-x-1"
+                        }`}
+                    />
+                </button>
             </div>
-            <div style={{ marginTop: "10px" }}>
-                <strong>Exceptions:</strong>
-                <ul>
-                    {exceptions.map((domain, index) => (
-                        <li key={index}>{domain}</li>
-                    ))}
-                </ul>
+
+            <div className="space-y-2">
+                <button
+                    onClick={addToExceptions}
+                    className="w-full py-2 bg-blue-600 hover:bg-blue-700 transition rounded-lg text-sm font-medium"
+                >
+                    Add to Exceptions
+                </button>
+
+                <button
+                    onClick={removeFromExceptions}
+                    className="w-full py-2 bg-red-600 hover:bg-red-700 transition rounded-lg text-sm font-medium"
+                >
+                    Remove From Exceptions
+                </button>
+            </div>
+
+            <div>
+                <h2 className="text-sm font-semibold mb-2">Exceptions:</h2>
+
+                {exceptions.length === 0 ? (
+                    <p className="text-gray-400 text-sm">No exceptions added.</p>
+                ) : (
+                    <ul className="space-y-1">
+                        {exceptions.map((domain, i) => (
+                            <li
+                                key={i}
+                                className="bg-gray-800 p-2 rounded-md text-xs break-all border border-gray-700"
+                            >
+                                {domain}
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </div>
         </div>
     );
