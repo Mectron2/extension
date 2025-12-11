@@ -17,18 +17,6 @@ export default function Popup() {
         getExceptions().then(setExceptions);
     }, [getExceptions]);
 
-    const isCurrentDomainInExceptions = useCallback(async () => {
-        const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
-        if (tab.url) {
-            const url = new URL(tab.url);
-            const domain = url.hostname;
-
-            const exceptions = await getExceptions();
-            return exceptions.includes(domain);
-        }
-        return false;
-    }, [getExceptions]);
-
     const handleToggle = useCallback(async () => {
         const {enabled} = await chrome.storage.local.get(["enabled"]);
         const newState = !enabled;
@@ -39,7 +27,7 @@ export default function Popup() {
         chrome.tabs.query({active: true, currentWindow: true}, ([tab]) => {
             chrome.tabs.sendMessage(tab.id!, {type: "toggle", enabled: newState});
         });
-    }, [isCurrentDomainInExceptions]);
+    }, []);
 
     const addToExceptions = useCallback(async () => {
         const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
