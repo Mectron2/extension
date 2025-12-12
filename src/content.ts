@@ -8,19 +8,16 @@ const DARK_MODE_CLASS = "extension-dark-mode";
 const DARK_MODE_STYLE_ID = "extension-dark-mode-style";
 const INVERT_FILTER = "invert(1) hue-rotate(180deg)";
 
-function ensureDarkModeStyles() {
-    if (document.getElementById(DARK_MODE_STYLE_ID)) {
-        return;
-    }
+const makeFilter = (brightness: number, contrast: number) =>
+    `invert(1) hue-rotate(180deg) brightness(${brightness}) contrast(${contrast})`;
 
-    const style = document.createElement("style");
-    style.id = DARK_MODE_STYLE_ID;
-    style.textContent = `
+function ensureDarkModeStyles(brightness: number, contrast: number) {
+    const css = `
         html.${DARK_MODE_CLASS} {
-            filter: ${INVERT_FILTER} !important;
+            filter: ${makeFilter(brightness, contrast)} !important;
             background: #111 !important;
         }
-
+        
         html.${DARK_MODE_CLASS} img,
         html.${DARK_MODE_CLASS} video,
         html.${DARK_MODE_CLASS} picture,
@@ -28,11 +25,21 @@ function ensureDarkModeStyles() {
             filter: ${INVERT_FILTER} !important;
         }
     `;
+
+    const existingStyle = document.getElementById(DARK_MODE_STYLE_ID) as HTMLStyleElement | null;
+    if (existingStyle) {
+        existingStyle.textContent = css;
+        return;
+    }
+
+    const style = document.createElement("style");
+    style.id = DARK_MODE_STYLE_ID;
+    style.textContent = css;
     document.head.append(style);
 }
 
-function applyDarkMode() {
-    ensureDarkModeStyles();
+function applyDarkMode(brightness: number, contrast: number) {
+    ensureDarkModeStyles(brightness, contrast);
     document.documentElement.classList.add(DARK_MODE_CLASS);
 }
 
@@ -44,7 +51,7 @@ function removeDarkMode() {
     }
 }
 
-async function refreshDarkMode() {
+async function refreshDarkMode(brightness = 1, contrast = 1) {
     const [{ enabled }, exceptions] = await Promise.all([
         chrome.storage.local.get(["enabled"]),
         getExceptions()
@@ -59,7 +66,8 @@ async function refreshDarkMode() {
         return;
     }
 
-    applyDarkMode();
+    applyDarkMode(brightness, contrast);
+    console.log(brightness, contrast)
 }
 
 void refreshDarkMode();
@@ -73,5 +81,9 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 chrome.runtime.onMessage.addListener((msg) => {
     if (msg.type === "toggle") {
         void refreshDarkMode();
+    }
+
+    if (msg.type === "brightness_contrast") {
+        void refreshDarkMode(msg.brightness, msg.contrast);
     }
 });

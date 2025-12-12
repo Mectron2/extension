@@ -3,6 +3,8 @@ import { useCallback, useEffect, useState } from "react";
 export default function Popup() {
     const [enabled, setEnabled] = useState<boolean>(false);
     const [exceptions, setExceptions] = useState<string[]>([]);
+    const [brightness, setBrightness] = useState<number>(1);
+    const [contrast, setContrast] = useState<number>(1);
 
     const getExceptions = useCallback(async () => {
         const { exceptions } =
@@ -29,6 +31,15 @@ export default function Popup() {
             chrome.tabs.sendMessage(tab.id!, { type: "toggle", enabled: newState });
         });
     }, []);
+
+    const handleBrightnessOrContrastChange = useCallback(async (brght: number | undefined, cntr: number | undefined) => {
+        if (brght) setBrightness(brght);
+        if (cntr) setContrast(cntr);
+
+        chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+            chrome.tabs.sendMessage(tab.id!, { type: "brightness_contrast", brightness, contrast });
+        })
+    }, [brightness, contrast]);
 
     const addToExceptions = useCallback(async () => {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -86,6 +97,29 @@ export default function Popup() {
                         }`}
                     />
                 </button>
+            </div>
+
+            <div className='space-y-4 flex items-center justify-center flex-col'>
+                <label className='w-full flex flex-col items-start text-sm'>
+                    Brightness: {brightness.toFixed(1)}
+                    <input type='range' className='w-full'
+                        min={0}
+                        max={3}
+                        step={0.1}
+                        value={brightness.toFixed(1)}
+                        onChange={e => handleBrightnessOrContrastChange(Number(e.target.value), undefined)}
+                    />
+                </label>
+                <label className='w-full flex flex-col items-start text-sm'>
+                    Contrast: {contrast.toFixed(1)}
+                    <input type='range' className='w-full'
+                        min={0}
+                        max={3}
+                        step={0.1}
+                        value={contrast.toFixed(1)}
+                        onChange={e => handleBrightnessOrContrastChange(undefined, Number(e.target.value))}
+                    />
+                </label>
             </div>
 
             <div className="space-y-2">
