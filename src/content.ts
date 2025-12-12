@@ -3,18 +3,30 @@ export const getExceptions = async () => {
     return exceptions || [];
 };
 
+type Settings = {
+    brightness: number;
+    contrast: number;
+    grayscale: number;
+};
+
+const DEFAULT_SETTINGS: Settings = {
+    brightness: 1,
+    contrast: 1,
+    grayscale: 0
+};
+
 const domain = new URL(window.location.href).hostname;
 const DARK_MODE_CLASS = "extension-dark-mode";
 const DARK_MODE_STYLE_ID = "extension-dark-mode-style";
 const INVERT_FILTER = "invert(1) hue-rotate(180deg)";
 
-const makeFilter = (brightness: number, contrast: number) =>
-    `invert(1) hue-rotate(180deg) brightness(${brightness}) contrast(${contrast})`;
+const makeFilter = ({ brightness, contrast, grayscale }: Settings) =>
+    `invert(1) hue-rotate(180deg) brightness(${brightness}) contrast(${contrast}) grayscale(${grayscale})`;
 
-function ensureDarkModeStyles(brightness: number, contrast: number) {
+function ensureDarkModeStyles(settings: Settings) {
     const css = `
         html.${DARK_MODE_CLASS} {
-            filter: ${makeFilter(brightness, contrast)} !important;
+            filter: ${makeFilter(settings)} !important;
             background: #111 !important;
         }
         
@@ -38,8 +50,8 @@ function ensureDarkModeStyles(brightness: number, contrast: number) {
     document.head.append(style);
 }
 
-function applyDarkMode(brightness: number, contrast: number) {
-    ensureDarkModeStyles(brightness, contrast);
+function applyDarkMode(settings: Settings) {
+    ensureDarkModeStyles(settings);
     document.documentElement.classList.add(DARK_MODE_CLASS);
 }
 
@@ -51,11 +63,15 @@ function removeDarkMode() {
     }
 }
 
-async function refreshDarkMode(brightness = 1, contrast = 1) {
-    const [{ enabled }, exceptions] = await Promise.all([
-        chrome.storage.local.get(["enabled"]),
+async function refreshDarkMode(overrideSettings?: Settings) {
+    const [state, exceptions] = await Promise.all([
+        chrome.storage.local.get(["enabled", "settings"]),
         getExceptions()
     ]);
+    const enabled = state.enabled as boolean | undefined;
+    const storedSettings = state.settings as Partial<Settings> | undefined;
+    const currentSettings =
+        overrideSettings || { ...DEFAULT_SETTINGS, ...(storedSettings || {}) };
 
     console.log('Exceptions: ', exceptions);
     console.log('Enabled: ', enabled);
@@ -66,14 +82,14 @@ async function refreshDarkMode(brightness = 1, contrast = 1) {
         return;
     }
 
-    applyDarkMode(brightness, contrast);
-    console.log(brightness, contrast)
+    applyDarkMode(currentSettings);
+    console.log(currentSettings);
 }
 
 void refreshDarkMode();
 
 chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === "local" && (changes.enabled || changes.exceptions)) {
+    if (areaName === "local" && (changes.enabled || changes.exceptions || changes.settings)) {
         void refreshDarkMode();
     }
 });
@@ -83,7 +99,7 @@ chrome.runtime.onMessage.addListener((msg) => {
         void refreshDarkMode();
     }
 
-    if (msg.type === "brightness_contrast") {
-        void refreshDarkMode(msg.brightness, msg.contrast);
+    if (msg.type === "update_settings" && msg.settings) {
+        void refreshDarkMode(msg.settings);
     }
 });

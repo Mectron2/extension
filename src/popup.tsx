@@ -1,10 +1,30 @@
 import { useCallback, useEffect, useState } from "react";
 
+type Settings = {
+    brightness: number;
+    contrast: number;
+    grayscale: number;
+};
+
+const DEFAULT_SETTINGS: Settings = {
+    brightness: 1,
+    contrast: 1,
+    grayscale: 0
+};
+
 export default function Popup() {
     const [enabled, setEnabled] = useState<boolean>(false);
     const [exceptions, setExceptions] = useState<string[]>([]);
-    const [brightness, setBrightness] = useState<number>(1);
-    const [contrast, setContrast] = useState<number>(1);
+    const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+
+    const sendSettingsUpdate = useCallback((next: Settings) => {
+        chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
+            if (!tab?.id) {
+                return;
+            }
+            chrome.tabs.sendMessage(tab.id, { type: "update_settings", settings: next });
+        });
+    }, []);
 
     const getExceptions = useCallback(async () => {
         const { exceptions } =
@@ -13,8 +33,13 @@ export default function Popup() {
     }, []);
 
     useEffect(() => {
-        chrome.storage.local.get(["enabled"]).then(({ enabled }) => {
+        chrome.storage.local.get(["enabled", "settings"]).then(({ enabled, settings }) => {
             setEnabled(!!enabled);
+            if (settings) {
+                setSettings((prev) => ({ ...prev, ...settings }));
+            } else {
+                void chrome.storage.local.set({ settings: DEFAULT_SETTINGS });
+            }
         });
 
         getExceptions().then(setExceptions);
@@ -28,18 +53,21 @@ export default function Popup() {
         setEnabled(newState);
 
         chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-            chrome.tabs.sendMessage(tab.id!, { type: "toggle", enabled: newState });
+            if (!tab?.id) {
+                return;
+            }
+            chrome.tabs.sendMessage(tab.id, { type: "toggle", enabled: newState });
         });
     }, []);
 
-    const handleBrightnessOrContrastChange = useCallback(async (brght: number | undefined, cntr: number | undefined) => {
-        if (brght) setBrightness(brght);
-        if (cntr) setContrast(cntr);
-
-        chrome.tabs.query({ active: true, currentWindow: true }, ([tab]) => {
-            chrome.tabs.sendMessage(tab.id!, { type: "brightness_contrast", brightness, contrast });
-        })
-    }, [brightness, contrast]);
+    const persistAndBroadcastSettings = useCallback((partial: Partial<Settings>) => {
+        setSettings((prev) => {
+            const next = { ...prev, ...partial };
+            void chrome.storage.local.set({ settings: next });
+            sendSettingsUpdate(next);
+            return next;
+        });
+    }, [sendSettingsUpdate]);
 
     const addToExceptions = useCallback(async () => {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -101,23 +129,33 @@ export default function Popup() {
 
             <div className='space-y-4 flex items-center justify-center flex-col'>
                 <label className='w-full flex flex-col items-start text-sm'>
-                    Brightness: {brightness.toFixed(1)}
+                    Brightness: {settings.brightness.toFixed(1)}
                     <input type='range' className='w-full'
                         min={0}
                         max={3}
                         step={0.1}
-                        value={brightness.toFixed(1)}
-                        onChange={e => handleBrightnessOrContrastChange(Number(e.target.value), undefined)}
+                        value={settings.brightness}
+                        onChange={e => persistAndBroadcastSettings({ brightness: Number(e.target.value) })}
                     />
                 </label>
                 <label className='w-full flex flex-col items-start text-sm'>
-                    Contrast: {contrast.toFixed(1)}
+                    Contrast: {settings.contrast.toFixed(1)}
                     <input type='range' className='w-full'
                         min={0}
                         max={3}
                         step={0.1}
-                        value={contrast.toFixed(1)}
-                        onChange={e => handleBrightnessOrContrastChange(undefined, Number(e.target.value))}
+                        value={settings.contrast}
+                        onChange={e => persistAndBroadcastSettings({ contrast: Number(e.target.value) })}
+                    />
+                </label>
+                <label className='w-full flex flex-col items-start text-sm'>
+                    Grayscale: {settings.grayscale.toFixed(1)}
+                    <input type='range' className='w-full'
+                        min={0}
+                        max={1}
+                        step={0.1}
+                        value={settings.grayscale}
+                        onChange={e => persistAndBroadcastSettings({ grayscale: Number(e.target.value) })}
                     />
                 </label>
             </div>
