@@ -73,17 +73,12 @@ async function refreshDarkMode(overrideSettings?: Settings) {
     const currentSettings =
         overrideSettings || { ...DEFAULT_SETTINGS, ...(storedSettings || {}) };
 
-    console.log('Exceptions: ', exceptions);
-    console.log('Enabled: ', enabled);
-    console.log('Current domain: ', domain);
-
     if (!enabled || exceptions.includes(domain)) {
         removeDarkMode();
         return;
     }
 
     applyDarkMode(currentSettings);
-    console.log(currentSettings);
 }
 
 void refreshDarkMode();
