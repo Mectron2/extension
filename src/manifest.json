@@ -4,6 +4,7 @@
   "version": "1.0",
   "permissions": ["tabs", "scripting", "storage"],
   "host_permissions": ["<all_urls>"],
+  "description": "Enable dark mode on any website with a single click! Transform your browsing experience with Darkify.",
   "action": {
     "default_popup": "popup.html"
   },
@@ -12,5 +13,10 @@
       "matches": ["<all_urls>"],
       "js": ["content.js"]
     }
-  ]
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
 }
