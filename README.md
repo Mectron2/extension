@@ -41,6 +41,8 @@
 
 ### Installation
 
+Install Darklify.crx directly from repository or follow the steps below to build and load it manually.
+
 1.  **Clone the repository:**
     ```bash
     git clone https://github.com/yourusername/darkify.git
