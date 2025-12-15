@@ -1,73 +1,95 @@
-# React + TypeScript + Vite
+# 🌙 Darkify - Universal Dark Mode Extension
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Darkify** is a powerful, lightweight browser extension that instantly transforms any website into a visually pleasing dark mode. Whether you're browsing late at night or just prefer a darker aesthetic, Darkify has you covered.
 
-Currently, two official plugins are available:
+Built with modern web technologies including **React**, **TypeScript**, **TailwindCSS**, and **Vite**.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+---
 
-## React Compiler
+## ✨ Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Global Dark Mode**: Toggle dark mode on/off for all websites with a single click.
+- **Smart Color Inversion**: Uses advanced CSS filters (`invert` + `hue-rotate`) to darken backgrounds while preserving image and video colors.
+- **Customizable Settings**: Fine-tune your experience with adjustable sliders:
+  - 🔆 **Brightness**: Control the intensity of the dark theme.
+  - 🌗 **Contrast**: Sharpen or soften the visual elements.
+  - ⚪ **Grayscale**: Reduce color saturation for a more muted look.
+- **Domain Exceptions**: Easily add or remove specific websites from the "Exceptions" list to keep them in their original mode.
+- **Real-time Updates**: Adjust settings in the popup and see changes reflect instantly on the page without reloading.
 
-## Expanding the ESLint configuration
+## 🛠️ Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **[Vite](https://vitejs.dev/)**: Fast frontend tooling and build system.
+- **[React](https://react.dev/)**: UI library for building the extension popup.
+- **[TypeScript](https://www.typescriptlang.org/)**: Type-safe code for better maintainability.
+- **[TailwindCSS](https://tailwindcss.com/)**: Utility-first CSS framework for styling the popup.
+- **[Chrome Extensions API (Manifest V3)](https://developer.chrome.com/docs/extensions/mv3/)**: The core platform for browser extension capabilities.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## 🚀 Getting Started
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Prerequisites
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Node.js (v18 or higher recommended)
+- npm or yarn or pnpm
+
+### Installation
+
+1.  **Clone the repository:**
+    ```bash
+    git clone https://github.com/yourusername/darkify.git
+    cd darkify
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Build the extension:**
+    ```bash
+    npm run build
+    ```
+    This will compile the assets into the `dist/` directory.
+
+### Loading into Chrome (Developer Mode)
+
+1.  Open Chrome and navigate to `chrome://extensions/`.
+2.  Enable **"Developer mode"** using the toggle in the top-right corner.
+3.  Click **"Load unpacked"**.
+4.  Select the `dist` folder generated in the previous step.
+5.  Darkify should now appear in your extensions toolbar!
+
+## 💻 Development
+
+To start the development server (useful for popup UI development):
+
+```bash
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+*Note: Since this is a browser extension, `npm run dev` in Vite typically serves the popup as a web page. To test content scripts and permission logic, you must rebuild and reload the extension in Chrome.*
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## 📂 Project Structure
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+/src
+  ├── content.ts       # Content script: handles logic injected into web pages
+  ├── popup.tsx        # React component for the extension popup UI
+  ├── main.tsx         # Entry point for the React app
+  ├── manifest.json    # Extension configuration (permissions, scripts, icons)
+  └── icons/           # App icons
 ```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1.  Fork the project
+2.  Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4.  Push to the branch (`git push origin feature/AmazingFeature`)
+5.  Open a Pull Request
+
+## 📄 License
+
+[MIT](LICENSE)
