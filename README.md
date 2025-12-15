@@ -1,19 +1,26 @@
 # 🌙 Darkify - Universal Dark Mode Extension
 
-**Darkify** is a powerful, lightweight browser extension that instantly transforms any website into a visually pleasing dark mode. Whether you're browsing late at night or just prefer a darker aesthetic, Darkify has you covered.
-
-Built with modern web technologies including **React**, **TypeScript**, **TailwindCSS**, and **Vite**.
+**Darkify** is a powerful, lightweight browser extension that instantly transforms any website into a visually pleasing dark mode. Whether you're browsing late at night or just prefer a darker aesthetic, Darkify has you covered. Built with modern web technologies including **React**, **TypeScript**, **TailwindCSS**, and **Vite**.
 
 ---
 
 ## ✨ Features
 
 - **Global Dark Mode**: Toggle dark mode on/off for all websites with a single click.
+
+<img src="src/images/Screenshot%202025-12-15%20at%2015.48.16.png" alt="Website without dark mode">
+
 - **Smart Color Inversion**: Uses advanced CSS filters (`invert` + `hue-rotate`) to darken backgrounds while preserving image and video colors.
+
+<img src="src/images/Screenshot%202025-12-15%20at%2015.48.22.png" alt="Same website with Darklify enabled">
+
 - **Customizable Settings**: Fine-tune your experience with adjustable sliders:
   - 🔆 **Brightness**: Control the intensity of the dark theme.
   - 🌗 **Contrast**: Sharpen or soften the visual elements.
   - ⚪ **Grayscale**: Reduce color saturation for a more muted look.
+
+<img src="src/images/Screenshot%202025-12-15%20at%2015.49.59.png" alt="Darkify settings demonstration">
+
 - **Domain Exceptions**: Easily add or remove specific websites from the "Exceptions" list to keep them in their original mode.
 - **Real-time Updates**: Adjust settings in the popup and see changes reflect instantly on the page without reloading.
 
@@ -59,16 +66,6 @@ Built with modern web technologies including **React**, **TypeScript**, **Tailwi
 4.  Select the `dist` folder generated in the previous step.
 5.  Darkify should now appear in your extensions toolbar!
 
-## 💻 Development
-
-To start the development server (useful for popup UI development):
-
-```bash
-npm run dev
-```
-
-*Note: Since this is a browser extension, `npm run dev` in Vite typically serves the popup as a web page. To test content scripts and permission logic, you must rebuild and reload the extension in Chrome.*
-
 ## 📂 Project Structure
 
 ```text
@@ -80,16 +77,4 @@ npm run dev
   └── icons/           # App icons
 ```
 
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1.  Fork the project
-2.  Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4.  Push to the branch (`git push origin feature/AmazingFeature`)
-5.  Open a Pull Request
-
-## 📄 License
-
-[MIT](LICENSE)
+#### Happy Browsing with Darkify 🌙
